@@ -1,0 +1,17 @@
+[Unit]
+Description=BotStories printer
+
+[Service]
+ExecStart=/usr/bin/node /home/pi/botstories-printer/index.js
+WorkingDirectory=/home/pi/botstories-printer
+Restart=always
+# Restart service after 10 seconds if node service crashes
+RestartSec=10
+# Output to syslog
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=botstories-printer
+User=root
+
+[Install]
+WantedBy=multi-user.target
