@@ -1,5 +1,6 @@
 [Unit]
 Description=BotStories printer
+After=dhcpcd.service
 
 [Service]
 ExecStart=/usr/bin/node /home/pi/botstories-printer/index.js
