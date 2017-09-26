@@ -11,6 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "dateformat": "^3.0.2",
     "escpos": "^2.4.4",
     "phoenix-channels": "^1.0.0",
     "word-wrap": "^1.2.3"

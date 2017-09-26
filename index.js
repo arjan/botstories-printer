@@ -1,6 +1,7 @@
 const { Socket } = require('phoenix-channels')
 const escpos = require('escpos')
 
+var dateFormat = require('dateformat')
 const wrap = require('word-wrap')
 
 // Select the adapter based on your printer type
@@ -16,32 +17,37 @@ function printStory(message) {
   //const url = 'https://www.rubberstamps.net/images/sc4.jpg'
   //escpos.Image.load(url, function (image) {
 
-    // title
-    printer
-      .font('b')
-      .align('ct')
-      .size(2, 2)
-      .text('Story by: ' + message.user.first_name)
-      .control('lf')
-      .control('lf')
+  const authors = message.payload.authors.map(n => n.name).join(', ').replace(/^(.*), /, '$1 and ');
 
-    printer
-      .size(1, 1)
-      .align('lt')
+  // title
+  printer
+    .font('b')
+    .align('ct')
+    .size(2, 2)
+    .text(authors)
+    .control('lf')
+    .control('lf')
 
-  //printer
-      //.raster(image)
-      //.control('lf')
+  printer
+    .size(1, 1)
+    .align('lt')
 
-    printer.text(message.payload.text)
-    printer
-      .control('lf')
-      .control('lf')
-      .control('lf')
-      .control('lf')
-      .control('lf')
-      .flush()
-//})
+  printer.text(message.payload.text)
+
+  printer
+    .control('lf')
+    .control('lf')
+    .text(dateFormat(new Date()))
+
+  printer
+    .control('lf')
+    .control('lf')
+    .control('lf')
+    .control('lf')
+    .control('lf')
+    .flush()
+    .cut()
+  //})
 
 }
 
@@ -56,10 +62,31 @@ device.open(function () {
                         .receive('error', resp => { console.log('Unable to join', resp) })
 
   channel.on('history', (r) => {
-    console.log('history', r.events.length)
+    printer
+      .font('b')
+      .align('ct')
+      .control('lf')
+      .text(dateFormat(new Date()))
+      .control('lf')
+      .control('lf')
+      .text('Printer online and waiting for stories.')
+      .control('lf')
+      .control('lf')
+      .control('lf')
+      .control('lf')
+      .cut()
+
+    for (const event of r.events) {
+      if (event.event === 'story') {
+        // printStory(event)
+      }
+    }
   })
 
-  channel.on('emit', (message) => {
-    printStory(message)
+  channel.on('emit', (event) => {
+    if (event.event === 'story') {
+      printStory(event)
+    }
+    //printStory(message)
   })
 })
