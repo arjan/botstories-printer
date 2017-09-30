@@ -14,41 +14,26 @@ const socket = new Socket('wss://botsqd.com/socket')
 
 function printStory(message) {
 
-  //const url = 'https://www.rubberstamps.net/images/sc4.jpg'
-  //escpos.Image.load(url, function (image) {
+  if (!message.payload.id) {
+    // legacy; no id in emit payload
+    printer
+      .text(message.payload.text)
+      .control('lf')
+      .control('lf')
+      .cut()
+    return
+  }
 
-  const authors = message.payload.authors.map(n => n.name).join(', ').replace(/^(.*), /, '$1 and ');
-
-  // title
-  printer
-    .font('b')
-    .align('ct')
-    .size(2, 2)
-    .text(authors)
-    .control('lf')
-    .control('lf')
-
-  printer
-    .size(1, 1)
-    .align('lt')
-
-  printer.text(message.payload.text)
-
-  printer
-    .control('lf')
-    .control('lf')
-    .text(dateFormat(new Date()))
-
-  printer
-    .control('lf')
-    .control('lf')
-    .control('lf')
-    .control('lf')
-    .control('lf')
-    .flush()
-    .cut()
-  //})
-
+  const url = `http://render.miraclethings.nl:8080/?u=https://botstory.net/print/${message.payload.id}&s=580x2500&d=100&crop=true`
+  escpos.Image.load(url, function (image) {
+    for (let i=0; i<2; i++) {
+      printer
+        .image(image)
+        .control('lf')
+        .control('lf')
+        .cut()
+    }
+  })
 }
 
 device.open(function () {
@@ -75,18 +60,11 @@ device.open(function () {
       .control('lf')
       .control('lf')
       .cut()
-
-    for (const event of r.events) {
-      if (event.event === 'story') {
-        // printStory(event)
-      }
-    }
   })
 
   channel.on('emit', (event) => {
     if (event.event === 'story') {
       printStory(event)
     }
-    //printStory(message)
   })
 })
