@@ -1,3 +1,4 @@
+const childProcess = require('child_process')
 const { Socket } = require('phoenix-channels')
 const escpos = require('escpos')
 
@@ -9,31 +10,29 @@ const device  = new escpos.USB()
 // const device  = new escpos.Network('localhost');
 // const device  = new escpos.Serial('/dev/usb/lp0');
 
-const printer = new escpos.Printer(device);
 const socket = new Socket('wss://botsqd.com/socket')
 
-function printStory(message) {
+function withPrinter(fun) {
+  const printer = new escpos.Printer(device);
+  fun(printer)
+  printer.close()
+}
 
+function printStory(message) {
   if (!message.payload.id) {
     // legacy; no id in emit payload
-    printer
-      .text(message.payload.text)
-      .control('lf')
-      .control('lf')
-      .cut()
-    return
-  }
-
-  const url = `http://render.miraclethings.nl:8080/?u=https://botstory.net/print/${message.payload.id}&s=580x2500&d=100&crop=true`
-  escpos.Image.load(url, function (image) {
-    for (let i=0; i<2; i++) {
+    withPrinter(function(printer) {
       printer
-        .image(image)
+        .text(message.payload.text)
         .control('lf')
         .control('lf')
         .cut()
-    }
-  })
+    })
+    return
+  }
+
+  console.log('Print story: ' + message.payload.id);
+  childProcess.execSync("python3 ./print.py " + message.payload.id)
 }
 
 device.open(function () {
@@ -47,19 +46,20 @@ device.open(function () {
                         .receive('error', resp => { console.log('Unable to join', resp) })
 
   channel.on('history', (r) => {
-    printer
-      .font('b')
-      .align('ct')
-      .control('lf')
-      .text(dateFormat(new Date()))
-      .control('lf')
-      .control('lf')
-      .text('Printer online and waiting for stories.')
-      .control('lf')
-      .control('lf')
-      .control('lf')
-      .control('lf')
-      .cut()
+    withPrinter(function(printer) {
+      printer
+        .align('ct')
+        .control('lf')
+        .text(dateFormat(new Date()))
+        .control('lf')
+        .control('lf')
+        .text('Printer online and waiting for stories.')
+        .control('lf')
+        .text(childProcess.execSync('ifconfig |grep \'inet \'|grep -v 127.0.0.1'))
+        .control('lf')
+        .control('lf')
+        .cut()
+    })
   })
 
   channel.on('emit', (event) => {
