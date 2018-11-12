@@ -3,14 +3,14 @@ const { Socket } = require('phoenix-channels')
 const escpos = require('escpos')
 
 var dateFormat = require('dateformat')
-const wrap = require('word-wrap')
 
 // Select the adapter based on your printer type
 const device  = new escpos.USB()
 // const device  = new escpos.Network('localhost');
 // const device  = new escpos.Serial('/dev/usb/lp0');
 
-const socket = new Socket('wss://botsqd.com/socket')
+const socket = new Socket('wss://bsqd.me/socket')
+const BOT_ID = 'be37d0a8-377d-4cc9-8a31-3bc14821aff7'
 
 function withPrinter(fun) {
   const printer = new escpos.Printer(device);
@@ -39,8 +39,7 @@ device.open(function () {
 
   socket.connect()
 
-  // Now that you are connected, you can join channels with a topic:
-  const channel = socket.channel('meta:be37d0a8-377d-4cc9-8a31-3bc14821aff7', {})
+  const channel = socket.channel('bot:' + BOT_ID, { user_id: 'master' })
   channel.join()
                         .receive('ok', resp => { console.log('Joined successfully', resp) })
                         .receive('error', resp => { console.log('Unable to join', resp) })

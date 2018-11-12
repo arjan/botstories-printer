@@ -14,8 +14,7 @@
     "dateformat": "^3.0.2",
     "escpos": "^2.4.4",
     "phoenix-channels": "^1.0.0",
-    "serialport": "^5.0.0",
-    "usb": "^1.2.0",
-    "word-wrap": "^1.2.3"
+    "serialport": "^7.0.2",
+    "usb": "^1.5.0"
   }
 }
