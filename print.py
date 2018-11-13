@@ -12,3 +12,5 @@ Epson.image("/tmp/print.png")
 Epson.cut()
 Epson.image("/tmp/print.png")
 Epson.cut()
+
+print("OK")

@@ -1,8 +1,9 @@
 const childProcess = require('child_process')
 const { Socket } = require('phoenix-channels')
 const escpos = require('escpos')
-
 var dateFormat = require('dateformat')
+
+const { ledControl } = require('./leds')
 
 // Select the adapter based on your printer type
 const device  = new escpos.USB()
@@ -10,7 +11,7 @@ const device  = new escpos.USB()
 // const device  = new escpos.Serial('/dev/usb/lp0');
 
 const socket = new Socket('wss://bsqd.me/socket')
-const BOT_ID = 'be37d0a8-377d-4cc9-8a31-3bc14821aff7'
+const BOT_ID = '88d565e3-f007-41cc-b86a-7e9a19344433'
 
 function withPrinter(fun) {
   const printer = new escpos.Printer(device);
@@ -62,8 +63,13 @@ device.open(function () {
   })
 
   channel.on('emit', (event) => {
+    console.log('event', event)
+
     if (event.event === 'story') {
       printStory(event)
+    }
+    if (event.event === 'leds') {
+      ledControl(event.payload)
     }
   })
 })
