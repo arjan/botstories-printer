@@ -3,7 +3,7 @@ const { Socket } = require('phoenix-channels')
 const escpos = require('escpos')
 var dateFormat = require('dateformat')
 
-const { ledControl } = require('./leds')
+// const { ledControl } = require('./leds')
 
 // Select the adapter based on your printer type
 const device  = new escpos.USB()
@@ -11,6 +11,9 @@ const device  = new escpos.USB()
 // const device  = new escpos.Serial('/dev/usb/lp0');
 
 const socket = new Socket('wss://bsqd.me/socket')
+socket.onError( () => console.log("there was an error with the connection!") )
+socket.onClose( () => console.log("the connection dropped") )
+
 const BOT_ID = '88d565e3-f007-41cc-b86a-7e9a19344433'
 
 function withPrinter(fun) {
@@ -37,6 +40,7 @@ function printStory(message) {
 }
 
 device.open(function () {
+  console.log('Printer initialized.')
 
   socket.connect()
 
