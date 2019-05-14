@@ -1,16 +1,20 @@
 const childProcess = require('child_process')
 const { Socket } = require('phoenix-channels')
 const escpos = require('escpos')
-
 var dateFormat = require('dateformat')
-const wrap = require('word-wrap')
+
+// const { ledControl } = require('./leds')
 
 // Select the adapter based on your printer type
 const device  = new escpos.USB()
 // const device  = new escpos.Network('localhost');
 // const device  = new escpos.Serial('/dev/usb/lp0');
 
-const socket = new Socket('wss://botsqd.com/socket')
+const socket = new Socket('wss://bsqd.me/socket')
+socket.onError( () => console.log("there was an error with the connection!") )
+socket.onClose( () => console.log("the connection dropped") )
+
+const BOT_ID = '88d565e3-f007-41cc-b86a-7e9a19344433'
 
 function withPrinter(fun) {
   const printer = new escpos.Printer(device);
@@ -36,11 +40,11 @@ function printStory(message) {
 }
 
 device.open(function () {
+  console.log('Printer initialized.')
 
   socket.connect()
 
-  // Now that you are connected, you can join channels with a topic:
-  const channel = socket.channel('meta:be37d0a8-377d-4cc9-8a31-3bc14821aff7', {})
+  const channel = socket.channel('bot:' + BOT_ID, { user_id: 'master' })
   channel.join()
                         .receive('ok', resp => { console.log('Joined successfully', resp) })
                         .receive('error', resp => { console.log('Unable to join', resp) })
@@ -63,8 +67,13 @@ device.open(function () {
   })
 
   channel.on('emit', (event) => {
+    console.log('event', event)
+
     if (event.event === 'story') {
       printStory(event)
+    }
+    if (event.event === 'leds') {
+      ledControl(event.payload)
     }
   })
 })
