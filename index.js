@@ -3,8 +3,6 @@ const { Socket } = require('phoenix-channels')
 const escpos = require('escpos')
 var dateFormat = require('dateformat')
 
-// const { ledControl } = require('./leds')
-
 // Select the adapter based on your printer type
 const device  = new escpos.USB()
 // const device  = new escpos.Network('localhost');
@@ -71,9 +69,6 @@ device.open(function () {
 
     if (event.event === 'story') {
       printStory(event)
-    }
-    if (event.event === 'leds') {
-      ledControl(event.payload)
     }
   })
 })
